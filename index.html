@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#075b3b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="บันทึกงานคนงาน">
+<link rel="manifest" href="manifest.json">
+<title>บันทึกงานคนงาน</title>
+<style>
+:root{--green:#075b3b;--green2:#087b50;--pale:#e9f6ef;--bg:#f4f7f5;--ink:#172b22;--muted:#65766d;--line:#dfe8e2;--red:#b42318;--amber:#a15c00}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif}
+header{background:var(--green);color:#fff;padding:18px 16px 15px;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #0001}
+header h1{font-size:21px;margin:0 0 5px}header p{margin:0;font-size:12px;opacity:.85}
+nav{display:flex;gap:6px;padding:10px;background:#fff;position:sticky;top:76px;z-index:4;overflow:auto;border-bottom:1px solid var(--line)}
+nav button{white-space:nowrap;border:0;border-radius:10px;padding:10px 12px;background:#f0f4f1;color:var(--ink);font-weight:650}
+nav button.active{background:var(--green);color:#fff}
+main{max-width:900px;margin:auto;padding:14px 12px 100px}.page{display:none}.page.active{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 7px #133d2510}
+h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{background:var(--pale);border-radius:13px;padding:13px}.stat small{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;font-size:21px;margin-top:5px;color:var(--green);overflow-wrap:anywhere}
+label{display:block;font-size:13px;font-weight:650;margin:10px 0 5px}input,select,textarea{width:100%;border:1px solid #ccd9d0;border-radius:10px;padding:11px;font:inherit;background:#fff;color:var(--ink);min-height:43px}input[type=checkbox]{width:auto;min-height:auto}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:10px;background:var(--green);color:white;font-weight:700;padding:12px 14px;font:inherit;cursor:pointer}.btn.secondary{background:#e8f1eb;color:var(--green)}.btn.danger{background:#fff0ee;color:var(--red)}.btn.small{padding:8px 10px;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.muted{color:var(--muted);font-size:12px}.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.itemtop{display:flex;justify-content:space-between;gap:10px;align-items:start}.itemtop strong{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#e8f5ed;color:var(--green);font-size:11px;font-weight:700}.pill.warn{background:#fff3dc;color:var(--amber)}.pill.red{background:#ffefed;color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 7px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f2f7f4;color:#42584b}
+.tablewrap{overflow-x:auto}.empty{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+.notice{border-radius:10px;background:#fff7e5;padding:10px;color:#7b5100;font-size:12px;line-height:1.5}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
+@media print{header,nav,.no-print,.btn{display:none!important}body{background:#fff}main{padding:0;max-width:none}.page{display:none!important}#reports.page{display:block!important}.card{box-shadow:none;border:0;padding:0}.tablewrap{overflow:visible}table{font-size:10px}}
+</style>
+</head>
+<body>
+<header><h1>👷 บันทึกงานคนงาน</h1><p>จัดการวันทำงาน • ค่าแรง • OT • เงินเบิกล่วงหน้า</p></header>
+<nav class="no-print">
+<button class="active" data-page="home">หน้าหลัก</button><button data-page="workers">คนงาน</button><button data-page="attendance">บันทึกงาน</button><button data-page="advances">เงินเบิก</button><button data-page="reports">รายงาน</button><button data-page="backup">สำรองข้อมูล</button>
+</nav>
+<main>
+<section id="home" class="page active">
+<div class="grid">
+<div class="stat"><small>คนงานทั้งหมด</small><strong id="sWorkers">0 คน</strong></div>
+<div class="stat"><small>วันทำงานเดือนนี้</small><strong id="sDays">0 วัน</strong></div>
+<div class="stat"><small>ค่าแรงรวมเดือนนี้</small><strong id="sGross">฿0</strong></div>
+<div class="stat"><small>ยอดสุทธิหลังหักเงินเบิก</small><strong id="sNet">฿0</strong></div>
+</div>
+<div class="card" style="margin-top:12px"><h2>ภาพรวมเดือนนี้</h2><p class="muted">ตัวเลขคำนวณจากบันทึกงานที่อยู่ในอุปกรณ์นี้</p><div id="homeSummary"></div><div class="actions"><button class="btn" onclick="showPage('attendance')">＋ บันทึกวันทำงาน</button><button class="btn secondary" onclick="showPage('workers')">＋ เพิ่มคนงาน</button></div></div>
+<div class="notice">ข้อควรรู้: ข้อมูลจะเก็บในเบราว์เซอร์ของเครื่องนี้ ไม่ได้ซิงก์อัตโนมัติระหว่างหลายเครื่อง ควรส่งออกไฟล์สำรองเป็นประจำ</div>
+</section>
+
+<section id="workers" class="page">
+<div class="card"><h2>เพิ่ม / แก้ไขคนงาน</h2><input type="hidden" id="wId">
+<div class="row"><div><label>ชื่อคนงาน *</label><input id="wName" placeholder="เช่น สมชาย ใจดี"></div><div><label>เบอร์โทร (ถ้ามี)</label><input id="wPhone" inputmode="tel" placeholder="08x-xxx-xxxx"></div></div>
+<div class="row"><div><label>รูปแบบค่าแรง</label><select id="wType"><option value="daily">รายวัน</option><option value="weekly">รายสัปดาห์</option><option value="monthly">รายเดือน</option></select></div><div><label>อัตราค่าแรง (บาท)</label><input id="wRate" type="number" min="0" step="0.01" placeholder="เช่น 400"></div></div>
+<label>หมายเหตุ</label><input id="wNote" placeholder="เช่น ช่างปูน / ทีม A">
+<div class="actions"><button class="btn" onclick="saveWorker()">บันทึกคนงาน</button><button class="btn secondary" onclick="clearWorkerForm()">ล้างแบบฟอร์ม</button></div></div>
+<div class="card"><h2>รายชื่อคนงาน <span class="muted" id="workerCount"></span></h2><div id="workerList"></div></div>
+</section>
+
+<section id="attendance" class="page">
+<div class="card"><h2>บันทึกวันทำงาน</h2>
+<div class="row"><div><label>วันที่</label><input id="aDate" type="date"></div><div><label>คนงาน</label><select id="aWorker"></select></div></div>
+<div class="row"><div><label>สถานะ</label><select id="aStatus"><option value="full">เต็มวัน</option><option value="half">ครึ่งวัน</option><option value="absent">ไม่มา</option></select></div><div><label>OT (ชั่วโมง)</label><input id="aOT" type="number" min="0" step="0.5" value="0"></div></div>
+<div class="row"><div><label>อัตรา OT (บาท/ชั่วโมง)</label><input id="aOTRate" type="number" min="0" step="0.01" value="0"></div><div><label>หมายเหตุ</label><input id="aNote" placeholder="เช่น ทำงานนอกเวลา"></div></div>
+<div class="actions"><button class="btn" onclick="saveAttendance()">บันทึกวันทำงาน</button></div>
+<p class="muted">ถ้าบันทึกคนงานคนเดิมในวันเดิม ระบบจะแก้ไขรายการเดิมแทนการสร้างซ้ำ</p></div>
+<div class="card"><h2>รายการล่าสุด</h2><div class="row"><div><label>ตั้งแต่วันที่</label><input id="aFrom" type="date" onchange="renderAttendance()"></div><div><label>ถึงวันที่</label><input id="aTo" type="date" onchange="renderAttendance()"></div></div><div id="attendanceList"></div></div>
+</section>
+
+<section id="advances" class="page">
+<div class="card"><h2>บันทึกเงินเบิกล่วงหน้า</h2>
+<div class="row"><div><label>วันที่เบิก</label><input id="xDate" type="date"></div><div><label>คนงาน</label><select id="xWorker"></select></div></div>
+<div class="row"><div><label>จำนวนเงิน (บาท)</label><input id="xAmount" type="number" min="0.01" step="0.01" placeholder="เช่น 500"></div><div><label>หมายเหตุ</label><input id="xNote" placeholder="เช่น เบิกซื้อของ"></div></div>
+<div class="actions"><button class="btn" onclick="saveAdvance()">บันทึกเงินเบิก</button></div></div>
+<div class="card"><h2>ประวัติเงินเบิก</h2><div id="advanceList"></div></div>
+</section>
+
+<section id="reports" class="page">
+<div class="card"><h2>รายงานค่าแรง</h2><div class="row"><div><label>ตั้งแต่วันที่</label><input id="rFrom" type="date"></div><div><label>ถึงวันที่</label><input id="rTo" type="date"></div></div><div class="actions no-print"><button class="btn" onclick="renderReport()">คำนวณรายงาน</button><button class="btn secondary" onclick="exportCSV()">ส่งออก CSV / Excel</button><button class="btn secondary" onclick="window.print()">พิมพ์ / บันทึก PDF</button></div><div id="reportSummary"></div><div class="tablewrap" id="reportTable"></div><p class="muted">หมายเหตุ: รายงานคิดค่าแรงจากรายการทำงานในช่วงวันที่ที่เลือก หักเงินเบิกล่วงหน้าที่บันทึกในช่วงเดียวกัน</p></div>
+</section>
+
+<section id="backup" class="page">
+<div class="card"><h2>สำรองและกู้คืนข้อมูล</h2><p>ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ JSON เพื่อเก็บสำรอง หรือย้ายไปอุปกรณ์อื่น</p><div class="actions"><button class="btn" onclick="backupJSON()">ดาวน์โหลดไฟล์สำรอง</button><label class="btn secondary" style="display:inline-flex;align-items:center;cursor:pointer">นำเข้าไฟล์สำรอง<input type="file" accept=".json,application/json" style="display:none" onchange="restoreJSON(event)"></label></div><p class="muted">การนำเข้าไฟล์สำรองจะแทนที่ข้อมูลปัจจุบันทั้งหมด ควรสำรองข้อมูลปัจจุบันก่อน</p></div>
+<div class="card"><h2>สถานะข้อมูล</h2><div id="backupStatus"></div><div class="actions"><button class="btn danger" onclick="clearAll()">ลบข้อมูลทั้งหมด</button></div></div>
+<div class="notice">ความเป็นส่วนตัว: อย่าใช้เครื่องที่ผู้อื่นเข้าถึงได้โดยไม่มีการล็อกหน้าจอ และเก็บไฟล์สำรองไว้ในที่ปลอดภัย</div>
+</section>
+</main>
+<script>
+const KEY='workerWorkLog_v1';
+const defaultData={workers:[],attendance:[],advances:[]};
+let db=loadDB();
+function loadDB(){try{return {...defaultData,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){return {...defaultData}}}
+function saveDB(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function money(n){return new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:2}).format(Number(n)||0)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function today(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function monthStart(){return today().slice(0,7)+'-01'}
+function typeName(t){return ({daily:'รายวัน',weekly:'รายสัปดาห์',monthly:'รายเดือน'})[t]||t}
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(id==='reports')renderReport();if(id==='backup')renderBackup();window.scrollTo(0,0)}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+function clearWorkerForm(){['wId','wName','wPhone','wRate','wNote'].forEach(id=>document.getElementById(id).value='');document.getElementById('wType').value='daily'}
+function saveWorker(){let name=document.getElementById('wName').value.trim(),rate=Number(document.getElementById('wRate').value);if(!name){alert('กรุณากรอกชื่อคนงาน');return}if(rate<0||!Number.isFinite(rate)){alert('กรุณาตรวจสอบค่าแรง');return}let id=document.getElementById('wId').value||uid();let w={id,name,phone:document.getElementById('wPhone').value.trim(),type:document.getElementById('wType').value,rate,note:document.getElementById('wNote').value.trim()};let i=db.workers.findIndex(x=>x.id===id);if(i>=0)db.workers[i]=w;else db.workers.push(w);clearWorkerForm();saveDB()}
+function editWorker(id){let w=db.workers.find(x=>x.id===id);if(!w)return;wId.value=w.id;wName.value=w.name;wPhone.value=w.phone||'';wType.value=w.type;wRate.value=w.rate;wNote.value=w.note||'';showPage('workers');window.scrollTo(0,0)}
+function deleteWorker(id){if(!confirm('ลบรายชื่อคนงานนี้? ประวัติทำงานเดิมจะยังอยู่ในรายงานข้อมูล แต่ไม่สามารถเลือกคนงานนี้เพิ่มได้'))return;db.workers=db.workers.filter(w=>w.id!==id);saveDB()}
+function saveAttendance(){let date=aDate.value,wid=aWorker.value;if(!date||!wid){alert('กรุณาเลือกวันที่และคนงาน');return}let w=db.workers.find(x=>x.id===wid);if(!w){alert('กรุณาเพิ่มคนงานก่อน');return}let status=aStatus.value,ot=Math.max(0,Number(aOT.value)||0),otRate=Math.max(0,Number(aOTRate.value)||0);let rec={id:uid(),date,wid,status,ot,otRate,note:aNote.value.trim()};let old=db.attendance.findIndex(x=>x.date===date&&x.wid===wid);if(old>=0){rec.id=db.attendance[old].id;db.attendance[old]=rec}else db.attendance.push(rec);aOT.value=0;aNote.value='';saveDB();alert('บันทึกวันทำงานแล้ว')}
+function saveAdvance(){let date=xDate.value,wid=xWorker.value,amount=Number(xAmount.value);if(!date||!wid||!(amount>0)){alert('กรุณากรอกวันที่ คนงาน และจำนวนเงินให้ถูกต้อง');return}db.advances.push({id:uid(),date,wid,amount,note:xNote.value.trim()});xAmount.value='';xNote.value='';saveDB();alert('บันทึกเงินเบิกล่วงหน้าแล้ว')}
+function deleteAdvance(id){if(confirm('ลบรายการเงินเบิกนี้?')){db.advances=db.advances.filter(x=>x.id!==id);saveDB()}}
+function dayUnits(a){return a.status==='full'?1:a.status==='half'?.5:0}
+function labor(a,w){
+  const rate=Number(w.rate||0), units=dayUnits(a);
+  if(w.type==='monthly') return rate/30*units;
+  if(w.type==='weekly') return rate/6*units;
+  return rate*units;
+}
+function otPay(a){return (Number(a.ot)||0)*(Number(a.otRate)||0)}
+function inRange(date,from,to){return (!from||date>=from)&&(!to||date<=to)}
+function fillWorkerSelects(){let opts=db.workers.map(w=>`<option value="${esc(w.id)}">${esc(w.name)} — ${money(w.rate)}/${w.type==='monthly'?'เดือน':w.type==='weekly'?'สัปดาห์':'วัน'}</option>`).join('');['aWorker','xWorker'].forEach(id=>{let el=document.getElementById(id),old=el.value;el.innerHTML=opts||'<option value="">เพิ่มคนงานก่อน</option>';if(db.workers.some(w=>w.id===old))el.value=old})}
+function renderWorkers(){workerCount.textContent=`(${db.workers.length} คน)`;workerList.innerHTML=db.workers.length?db.workers.map(w=>`<div class="item"><div class="itemtop"><div><strong>${esc(w.name)}</strong><div class="muted">${esc(w.phone||'ไม่ระบุเบอร์')} · ${typeName(w.type)} · ${money(w.rate)}${w.note?' · '+esc(w.note):''}</div></div><div class="actions" style="margin:0"><button class="btn secondary small" onclick="editWorker('${w.id}')">แก้ไข</button><button class="btn danger small" onclick="deleteWorker('${w.id}')">ลบ</button></div></div></div>`).join(''):'<div class="empty">ยังไม่มีรายชื่อคนงาน เพิ่มคนงานได้จากแบบฟอร์มด้านบน</div>'}
+function renderAttendance(){let from=aFrom.value,to=aTo.value;let arr=[...db.attendance].filter(a=>inRange(a.date,from,to)).sort((a,b)=>b.date.localeCompare(a.date));attendanceList.innerHTML=arr.length?arr.map(a=>{let w=db.workers.find(x=>x.id===a.wid),status={full:'เต็มวัน',half:'ครึ่งวัน',absent:'ไม่มา'}[a.status]||a.status;return `<div class="item"><div class="itemtop"><div><strong>${esc(w?.name||'คนงานที่ถูกลบ')}</strong><div class="muted">${a.date} · ${status} · OT ${a.ot||0} ชม.</div><div class="muted">ค่าแรง ${money(w?labor(a,w)+otPay(a):otPay(a))}${a.note?' · '+esc(a.note):''}</div></div><button class="btn danger small" onclick="deleteAttendance('${a.id}')">ลบ</button></div></div>`}).join(''):'<div class="empty">ยังไม่มีรายการในช่วงวันที่นี้</div>'}
+function deleteAttendance(id){if(confirm('ลบรายการวันทำงานนี้?')){db.attendance=db.attendance.filter(a=>a.id!==id);saveDB()}}
+function renderAdvances(){let arr=[...db.advances].sort((a,b)=>b.date.localeCompare(a.date));advanceList.innerHTML=arr.length?arr.map(x=>{let w=db.workers.find(y=>y.id===x.wid);return `<div class="item"><div class="itemtop"><div><strong>${esc(w?.name||'คนงานที่ถูกลบ')} · ${money(x.amount)}</strong><div class="muted">${x.date}${x.note?' · '+esc(x.note):''}</div></div><button class="btn danger small" onclick="deleteAdvance('${x.id}')">ลบ</button></div></div>`}).join(''):'<div class="empty">ยังไม่มีรายการเงินเบิก</div>'}
+function getReport(){let from=rFrom.value,to=rTo.value;return db.workers.map(w=>{let aa=db.attendance.filter(a=>a.wid===w.id&&inRange(a.date,from,to));let units=aa.reduce((s,a)=>s+dayUnits(a),0),gross=aa.reduce((s,a)=>s+labor(a,w)+otPay(a),0),ot=aa.reduce((s,a)=>s+otPay(a),0),advance=db.advances.filter(x=>x.wid===w.id&&inRange(x.date,from,to)).reduce((s,x)=>s+x.amount,0);return {w,aa,units,gross,ot,advance,net:gross-advance}})}
+function renderReport(){if(!rFrom.value)rFrom.value=monthStart();if(!rTo.value)rTo.value=today();let rows=getReport(),gross=rows.reduce((s,r)=>s+r.gross,0),adv=rows.reduce((s,r)=>s+r.advance,0),net=rows.reduce((s,r)=>s+r.net,0);reportSummary.innerHTML=`<div class="grid" style="margin:12px 0"><div class="stat"><small>ค่าแรง + OT</small><strong>${money(gross)}</strong></div><div class="stat"><small>เงินเบิกรวม</small><strong>${money(adv)}</strong></div><div class="stat"><small>ยอดสุทธิ</small><strong>${money(net)}</strong></div><div class="stat"><small>จำนวนคนงาน</small><strong>${rows.filter(r=>r.aa.length||r.advance>0).length} คน</strong></div></div>`;reportTable.innerHTML=rows.length?`<table><thead><tr><th>ชื่อ</th><th>วันทำงาน*</th><th>ค่าแรง + OT</th><th>เงินเบิก</th><th>ยอดสุทธิ</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.w.name)}<br><span class="muted">${typeName(r.w.type)}</span></td><td>${r.units.toLocaleString('th-TH')} วัน</td><td>${money(r.gross)}<br><span class="muted">OT ${money(r.ot)}</span></td><td>${money(r.advance)}</td><td><strong>${money(r.net)}</strong></td></tr>`).join('')}</tbody></table><p class="muted">* รายเดือนคำนวณตามสัดส่วน 1/30 ของอัตรารายเดือนต่อวันทำงานที่บันทึก และ OT คิดตามอัตราต่อชั่วโมงที่กรอก</p>`:'<div class="empty">ยังไม่มีคนงาน</div>'}
+function exportCSV(){let rows=getReport();let out=[['ชื่อคนงาน','รูปแบบค่าแรง','วันทำงาน','ค่าแรงรวม OT (บาท)','OT (บาท)','เงินเบิกล่วงหน้า (บาท)','ยอดสุทธิ (บาท)']];rows.forEach(r=>out.push([r.w.name,typeName(r.w.type),r.units,r.gross.toFixed(2),r.ot.toFixed(2),r.advance.toFixed(2),r.net.toFixed(2)]));let csv='\ufeff'+out.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');downloadBlob(csv,`รายงานค่าแรง_${rFrom.value}_${rTo.value}.csv`,'text/csv;charset=utf-8')}
+function downloadBlob(content,name,type){let blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function backupJSON(){downloadBlob(JSON.stringify(db,null,2),`สำรองข้อมูลคนงาน_${today()}.json`,'application/json')}
+function restoreJSON(e){let file=e.target.files[0];if(!file)return;let reader=new FileReader();reader.onload=()=>{try{let data=JSON.parse(reader.result);if(!Array.isArray(data.workers)||!Array.isArray(data.attendance)||!Array.isArray(data.advances))throw Error('รูปแบบไม่ถูกต้อง');if(!confirm('ข้อมูลเดิมจะถูกแทนที่ ต้องการดำเนินการต่อหรือไม่?'))return;db=data;saveDB();alert('นำเข้าข้อมูลสำเร็จ')}catch(err){alert('ไฟล์ไม่ถูกต้องหรืออ่านไม่ได้')}};reader.readAsText(file);e.target.value=''}
+function clearAll(){if(prompt('พิมพ์ ลบข้อมูล เพื่อยืนยัน')==='ลบข้อมูล'){db={...defaultData};saveDB()}}
+function renderBackup(){backupStatus.innerHTML=`<p>คนงาน: <strong>${db.workers.length}</strong> คน</p><p>รายการวันทำงาน: <strong>${db.attendance.length}</strong> รายการ</p><p>รายการเงินเบิก: <strong>${db.advances.length}</strong> รายการ</p><p class="muted">พื้นที่เก็บข้อมูล: เบราว์เซอร์ของอุปกรณ์นี้</p>`}
+function renderHome(){let start=monthStart(),end=today(),aa=db.attendance.filter(a=>inRange(a.date,start,end));let units=aa.reduce((s,a)=>s+dayUnits(a),0),gross=aa.reduce((s,a)=>{let w=db.workers.find(w=>w.id===a.wid);return s+(w?labor(a,w):0)+otPay(a)},0),adv=db.advances.filter(x=>inRange(x.date,start,end)).reduce((s,x)=>s+x.amount,0);sWorkers.textContent=db.workers.length+' คน';sDays.textContent=units.toLocaleString('th-TH')+' วัน';sGross.textContent=money(gross);sNet.textContent=money(gross-adv);homeSummary.innerHTML=`<p>ตั้งแต่ ${start} ถึง ${end}</p><p>รายการบันทึกงาน <strong>${aa.length}</strong> รายการ</p><p>OT รวม <strong>${money(aa.reduce((s,a)=>s+otPay(a),0))}</strong></p><p>เงินเบิกล่วงหน้าเดือนนี้ <strong>${money(adv)}</strong></p>`}
+function renderAll(){fillWorkerSelects();renderWorkers();renderAttendance();renderAdvances();renderHome();renderReport();renderBackup()}
+aDate.value=today();xDate.value=today();aFrom.value=monthStart();aTo.value=today();rFrom.value=monthStart();rTo.value=today();
+renderAll();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
